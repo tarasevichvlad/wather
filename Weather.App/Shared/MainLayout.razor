@@ -1,0 +1,82 @@
+@using Weather.Contracts
+@using Weather.App.Apis
+@inherits LayoutComponentBase
+@inject IWeatherApi _weatherApi
+
+<MudThemeProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudText Typo="Typo.h5" Class="ml-3">Weather forecast</MudText>
+    </MudAppBar>
+    <MudMainContent>
+        
+        <div class="d-flex flex-grow-1 gap-4">
+            <MudSelect T="string" Label="Location" @bind-Value="City" AnchorOrigin="Origin.BottomCenter">
+                @foreach (var city in _cities)
+                {
+                    <MudSelectItem Value="@city"/>
+                }
+            </MudSelect>
+            <MudDatePicker Class="flex-none d-flex" Label="Only Calendar" @bind-Date="DateValue" DisableToolbar="true"/>
+            <MudButton Class="flex-none d-flex" Variant="Variant.Filled" OnClick="Search">Search</MudButton>
+        </div>
+
+        <MudSimpleTable Style="overflow-x: auto;">
+            <thead>
+            <tr>
+                <th>CityName</th>
+                <th>Date</th>
+                <th>AverageDailyTemperature</th>
+                <th>TemperatureAtNight</th>
+                <th>TemperatureDuringTheDay</th>
+                <th>Humidity</th>
+                <th>Precipitation</th>
+                <th>Wind</th>
+                <th>MaximumWindSpeed</th>
+                <th>GeomagneticActivity</th>
+                <th>MaxPressure</th>
+                <th>MinPressure</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var forecast in _forecasts)
+            {
+                <tr>
+                    <td>@forecast.CityName</td>
+                    <td>@forecast.Date</td>
+                    <td>@forecast.AverageDailyTemperature</td>
+                    <td>@forecast.TemperatureAtNight</td>
+                    <td>@forecast.TemperatureDuringTheDay</td>
+                    <td>@forecast.Humidity</td>
+                    <td>@forecast.Precipitation</td>
+                    <td>@forecast.Wind</td>
+                    <td>@forecast.MaximumWindSpeed</td>
+                    <td>@forecast.GeomagneticActivity</td>
+                    <td>@forecast.MaxPressure</td>
+                    <td>@forecast.MinPressure</td>
+
+                </tr>
+            }
+            </tbody>
+        </MudSimpleTable>
+
+    </MudMainContent>
+</MudLayout>
+@code {
+    private DateTime? DateValue {get;set;} = DateTime.Now;
+    private string City { get; set; } = string.Empty;
+    
+    private IEnumerable<WeatherOfDay> _forecasts = Enumerable.Empty<WeatherOfDay>();
+    private IEnumerable<string> _cities = Enumerable.Empty<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cities = await _weatherApi.GetCountriesAsync();
+    }
+
+    private async Task Search()
+    {
+        _forecasts = await _weatherApi.GetWeatherOfDaysAsync(City, DateValue.Value.ToShortDateString().Replace("/", "."));
+    }
+}
