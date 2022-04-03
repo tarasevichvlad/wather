@@ -9,12 +9,15 @@
 
     <ItemGroup>
         <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Weather.Contracts\Weather.Contracts.csproj" />
       <ProjectReference Include="..\Weather.Persistent\Weather.Persistent.csproj" />
+      <ProjectReference Include="..\Weather.Tools.Parser\Weather.Tools.Parser.csproj" />
     </ItemGroup>
 
 </Project>

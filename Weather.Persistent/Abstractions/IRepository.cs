@@ -2,7 +2,7 @@ namespace Weather.Persistent.Abstractions;
 
 public interface IRepository<T>
 {
-    T GetItem(Guid id);
-    void Create(T weatherOfDay);
+    Task<T> GetItemAsync(Guid id);
+    Task CreateAsync(T weatherOfDay);
 }
 

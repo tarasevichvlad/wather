@@ -20,7 +20,7 @@ public class WeatherOfDayGeneratorService : IWeatherOfDayGeneratorService
             {
                 Id = Guid.NewGuid(),
                 CityName = cities[_random.Next(cities.Length - 1)],
-                Date = (new DateTime(2022, _random.Next(1, 12), _random.Next(1, 31))).ToShortDateString(),
+                Date = (new DateTime(2022, _random.Next(1, 12), _random.Next(1, 29))).ToShortDateString(),
                 TemperatureDuringTheDay = _random.Next(1, 31).ToString(),
                 TemperatureAtNight = _random.Next(1, 31).ToString(),
                 MaximumWindSpeed = _random.Next(1, 31).ToString(),

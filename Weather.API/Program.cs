@@ -1,33 +1,40 @@
+using Serilog;
 using Weather.API.Extensions;
 using Weather.Persistent.Extensions;
+using Weather.Tools.Parser;
 using BootstrapExtensions = Weather.API.Extensions.BootstrapExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.ConfigureMongoClient();
-builder.Services.ConfigureRepositories();
-builder.Services.ConfigureWeatherOfDayGeneratorService();
+var logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
 
-builder.Services.ConfigureCors();
+builder.Logging.AddSerilog(logger);
+
+var options = builder.Services.ConfigureMongoOptions(builder.Configuration, logger);
+
+builder.Services
+    .ConfigureMongoClient(options)
+    .ConfigureRepositories()
+    .ConfigureWeatherOfDayGeneratorService()
+    .ConfigureParser()
+    .ConfigureCors();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Logging.ClearProviders();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseCors(BootstrapExtensions.MyAllowSpecificOrigins);
-app.CreateDbIfNoExist();
-
-app.UseHttpsRedirection();
+app.UseCors(BootstrapExtensions.AnyOrigins);
+await app.CreateDbWithRealDataIfNoExist(options);
 
 app.UseAuthorization();
 

@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
+using Serilog;
 using Weather.Persistent.Repositories;
 using Weather.Persistent.Services;
 
@@ -8,24 +10,38 @@ namespace Weather.Persistent.Extensions;
 
 public static class BootstrapExtensions
 {
-    public static IServiceCollection ConfigureMongoClient(this IServiceCollection services)
+    public static MongoDbOptions ConfigureMongoOptions(this IServiceCollection services, IConfiguration configuration, ILogger logger)
     {
-        services.AddSingleton<IMongoClient>(new MongoClient("mongodb://root:example@localhost:27017"));
+        var optionsSection = configuration.GetSection(MongoDbOptions.OptionName);
+        services.AddOptions<MongoDbOptions>()
+            .Bind(optionsSection)
+            .ValidateDataAnnotations();
+
+        var options = optionsSection.Get<MongoDbOptions>();
+
+        logger.Information("Added mongo options: Connection string: {ConnectionString}", options.ConnectionString);
+
+        return options;
+    }
+    
+    public static IServiceCollection ConfigureMongoClient(this IServiceCollection services, MongoDbOptions options)
+    {
+        services.AddSingleton<IMongoClient>(new MongoClient(options.ConnectionString)); // "mongodb://root:example@mongo:27017"
 
         return services;
     }
 
-    public static void CreateDbIfNoExist(this IHost webApplication)
+    public static async Task CreateDbWithStubDataIfNoExist(this IHost webApplication, MongoDbOptions mongoDbOptions)
     {
         var mongoClient = webApplication.Services.GetService<IMongoClient>()!;
 
-        var databases = mongoClient.ListDatabaseNames().ToList();
+        var databases = (await mongoClient.ListDatabaseNamesAsync()).ToList();
 
-        if (databases.Exists(x => x.Equals("WeatherForecast"))) return;
+        if (databases.Exists(x => x.Equals(mongoDbOptions.DatabaseName))) return;
 
-        mongoClient.GetDatabase("WeatherForecast").CreateCollection("Weather");
+        await mongoClient.GetDatabase(mongoDbOptions.DatabaseName).CreateCollectionAsync(mongoDbOptions.CollectionName);
 
-        GenerateStubData(webApplication);
+        await GenerateStubData(webApplication);
     }
 
     public static IServiceCollection ConfigureWeatherOfDayGeneratorService(this IServiceCollection services)
@@ -35,14 +51,14 @@ public static class BootstrapExtensions
         return services;
     }
 
-    private static void GenerateStubData(this IHost webApplication)
+    private static async Task GenerateStubData(this IHost webApplication)
     {
         var weatherOfDayGeneratorService = webApplication.Services.GetService<IWeatherOfDayGeneratorService>()!;
         var weatherForecastRepository = webApplication.Services.GetService<IWeatherForecastRepository>()!;
 
         var generateWeatherOfDays = weatherOfDayGeneratorService.GenerateWeatherOfDays(10);
 
-        weatherForecastRepository.CreateBulk(generateWeatherOfDays);
+        await weatherForecastRepository.CreateBulkAsync(generateWeatherOfDays);
     }
 
     public static IServiceCollection ConfigureRepositories(this IServiceCollection services)

@@ -25,6 +25,31 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
       
+  weather-api:
+    depends_on:
+      - mongo
+    build:
+      context: .
+      dockerfile: WeatherApiDockerfile
+    environment:
+      MongoDbOptions__ConnectionString: mongodb://root:example@mongo:27017/
+    networks:
+      - host
+    ports:
+      - 8000:80
+  
+  weather-app:
+    depends_on:
+      - mongo
+      - weather-api
+    build:
+      context: .
+      dockerfile: WeatherAppDockerfile
+    networks:
+      - host
+    ports:
+      - 8001:80
+
 networks:
   host:
     driver: bridge

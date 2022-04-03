@@ -16,14 +16,14 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet]
-    public IEnumerable<WeatherOfDay> Get([FromQuery(Name = "city")] string city, [FromQuery(Name = "date")] DateTime date)
+    public async Task<IEnumerable<WeatherOfDay>> GetWeatherOfDays([FromQuery(Name = "city")] string city, [FromQuery(Name = "date")] DateTime date)
     {
-        return _weatherForecastRepository.GetWeatherOfDaysByCityName(city, date.ToShortDateString());
+        return await _weatherForecastRepository.GetWeatherOfDaysByCityNameAsync(city, date.ToShortDateString());
     }
 
     [HttpGet("/cities")]
-    public IEnumerable<string> Get()
+    public async Task<IEnumerable<string>> GetCities()
     {
-        return _weatherForecastRepository.GetCountryNames();
+        return await _weatherForecastRepository.GetCountryNamesAsync();
     }
 }

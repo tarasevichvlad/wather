@@ -2,5 +2,5 @@ namespace Weather.Persistent.Abstractions;
 
 public interface IBulkRepository<T>
 {
-    void CreateBulk(IEnumerable<T> weatherOfDay);
+    Task CreateBulkAsync(IEnumerable<T> weatherOfDay);
 }

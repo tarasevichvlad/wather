@@ -10,6 +10,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Persistent", "Weath
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Tools.Parser", "Weather.Tools.Parser\Weather.Tools.Parser.csproj", "{B926E32E-6EF1-4F16-A25A-399A949FB087}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev-tools", "dev-tools", "{6ECA1E77-1328-4E43-B3C5-AC6EF514AF3B}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yaml = docker-compose.yaml
+		WeatherApiDockerfile = WeatherApiDockerfile
+		.dockerignore = .dockerignore
+		WeatherAppDockerfile = WeatherAppDockerfile
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Tools.Parser.App", "Weather.Tools.Parser.App\Weather.Tools.Parser.App.csproj", "{24E289A1-CD94-471E-AF5F-4A50EF8A2827}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +46,9 @@ Global
 		{B926E32E-6EF1-4F16-A25A-399A949FB087}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B926E32E-6EF1-4F16-A25A-399A949FB087}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B926E32E-6EF1-4F16-A25A-399A949FB087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E289A1-CD94-471E-AF5F-4A50EF8A2827}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E289A1-CD94-471E-AF5F-4A50EF8A2827}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E289A1-CD94-471E-AF5F-4A50EF8A2827}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E289A1-CD94-471E-AF5F-4A50EF8A2827}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

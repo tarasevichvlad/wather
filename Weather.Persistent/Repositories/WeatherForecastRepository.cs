@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Weather.Contracts;
 using Weather.Persistent.Abstractions;
@@ -6,42 +7,45 @@ namespace Weather.Persistent.Repositories;
 
 public interface IWeatherForecastRepository : IRepository<WeatherOfDay>, IBulkRepository<WeatherOfDay>
 {
-    IEnumerable<WeatherOfDay> GetWeatherOfDaysByCityName(string name, string dateTime);
-    IEnumerable<string> GetCountryNames();
+    Task<IEnumerable<WeatherOfDay>> GetWeatherOfDaysByCityNameAsync(string name, string dateTime);
+    Task<IEnumerable<string>> GetCountryNamesAsync();
 }
 
 public class WeatherForecastRepository : IWeatherForecastRepository
 {
     private readonly IMongoCollection<WeatherOfDay> _collection;
 
-    public WeatherForecastRepository(IMongoClient mongoClient)
+    public WeatherForecastRepository(IMongoClient mongoClient, IOptions<MongoDbOptions> mongoDbOptions)
     {
-        _collection = mongoClient.GetDatabase("WeatherForecast").GetCollection<WeatherOfDay>("Weather");
+        
+        _collection = mongoClient.GetDatabase(mongoDbOptions.Value.DatabaseName).GetCollection<WeatherOfDay>(mongoDbOptions.Value.CollectionName);
     }
 
-    public WeatherOfDay GetItem(Guid id)
+    public async Task<WeatherOfDay> GetItemAsync(Guid id)
     {
-        return _collection.Find(x => x.CityName.Equals(id)).Limit(1).Single();
+        var result = await _collection.FindAsync(x => x.CityName.Equals(id));
+        return await result.SingleAsync();
     }
 
-    public void Create(WeatherOfDay weatherOfDay)
+    public async Task CreateAsync(WeatherOfDay weatherOfDay)
     {
-        _collection.InsertOne(weatherOfDay);
+        await _collection.InsertOneAsync(weatherOfDay);
     }
 
-    public void CreateBulk(IEnumerable<WeatherOfDay> weatherOfDay)
+    public async Task CreateBulkAsync(IEnumerable<WeatherOfDay> weatherOfDay)
     {
-        _collection.InsertMany(weatherOfDay);
+        await _collection.InsertManyAsync(weatherOfDay);
     }
 
-    public IEnumerable<WeatherOfDay> GetWeatherOfDaysByCityName(string name, string dateTime)
+    public async Task<IEnumerable<WeatherOfDay>> GetWeatherOfDaysByCityNameAsync(string name, string dateTime)
     {
-        var ss =  _collection.Find(x => x.CityName == name && x.Date.Equals(dateTime)).ToList();
-        return ss;
+        var result = await _collection.FindAsync(x => x.CityName == name && x.Date.Equals(dateTime));
+        return await result.ToListAsync();
     }
 
-    public IEnumerable<string> GetCountryNames()
+    public async Task<IEnumerable<string>> GetCountryNamesAsync()
     {
-        return _collection.Distinct(day => day.CityName, day => true).ToList();
+        var result = await _collection.DistinctAsync(day => day.CityName, day => true);
+        return await result.ToListAsync();
     }
 }
