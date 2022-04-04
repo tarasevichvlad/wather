@@ -26,7 +26,7 @@ public static class BootstrapExtensions
     
     public static IServiceCollection ConfigureMongoClient(this IServiceCollection services, MongoDbOptions options)
     {
-        services.AddSingleton<IMongoClient>(new MongoClient(options.ConnectionString)); // "mongodb://root:example@mongo:27017"
+        services.AddSingleton<IMongoClient>(new MongoClient(options.ConnectionString));
 
         return services;
     }

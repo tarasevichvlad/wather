@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev-tools", "dev-tools", "{
 		WeatherApiDockerfile = WeatherApiDockerfile
 		.dockerignore = .dockerignore
 		WeatherAppDockerfile = WeatherAppDockerfile
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weather.Tools.Parser.App", "Weather.Tools.Parser.App\Weather.Tools.Parser.App.csproj", "{24E289A1-CD94-471E-AF5F-4A50EF8A2827}"

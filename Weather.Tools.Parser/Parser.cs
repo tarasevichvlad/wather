@@ -139,7 +139,7 @@ public class Parser : IParser
         var weatherOfDay = new WeatherOfDay
         {
             Id = Guid.NewGuid(),
-            Date = DateTime.Now.Add(TimeSpan.FromDays(1 + index)).ToShortDateString(),
+            Date = DateTime.Now.Add(TimeSpan.FromDays(index)).ToShortDateString(),
             CityName = cityName,
             Wind = wind,
             MaximumWindSpeed = maximumWindSpeed,
@@ -165,7 +165,7 @@ public class Parser : IParser
     /// <returns></returns>
     private static async Task<string> GetValueBySelector(Page page, string? selector, string? defaultValue = default)
     {
-        var element = await page.WaitForSelectorAsync(selector);
+        var element = await page.QuerySelectorAsync(selector);
 
         if (element == null)
             return defaultValue;
