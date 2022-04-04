@@ -5,6 +5,10 @@ using Weather.Persistent.Abstractions;
 
 namespace Weather.Persistent.Repositories;
 
+/// <summary>
+/// Предоставляет интерфейс работы с базой данных.
+/// Репозиторий позволяет работать с погодой.
+/// </summary>
 public interface IWeatherForecastRepository : IRepository<WeatherOfDay>, IBulkRepository<WeatherOfDay>
 {
     Task<IEnumerable<WeatherOfDay>> GetWeatherOfDaysByCityNameAsync(string name, string dateTime);

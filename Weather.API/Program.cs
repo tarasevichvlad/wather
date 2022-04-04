@@ -11,6 +11,7 @@ var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
+builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
 var options = builder.Services.ConfigureMongoOptions(builder.Configuration, logger);
@@ -25,8 +26,6 @@ builder.Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Logging.ClearProviders();
 
 var app = builder.Build();
 

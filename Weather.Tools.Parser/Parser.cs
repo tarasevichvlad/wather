@@ -6,6 +6,10 @@ namespace Weather.Tools.Parser;
 
 public interface IParser
 {
+    /// <summary>
+    /// Запускает алгоритм парсинга
+    /// </summary>
+    /// <returns></returns>
     Task ParseAsync();
 }
 
@@ -18,18 +22,31 @@ public class Parser : IParser
         _weatherForecastRepository = weatherForecastRepository;
     }
 
+    /// <summary>
+    /// Запускает алгоритм парсинга
+    /// </summary>
     public async Task ParseAsync()
     {
         var browser = await LaunchBrowser();
 
         await using var page = await browser.NewPageAsync();
 
-        await Parallel.ForEachAsync(GetCitiesHref(page), (href, token) =>  Body(href, browser, token));
+        await Parallel.ForEachAsync(GetCitiesHref(page), (href, token) =>  NavigateToCityPage(href, browser, token));
 
         await CloseAll(page, browser);
     }
 
-    private async ValueTask Body(string cityHref, Browser browser, CancellationToken cancellationToken)
+    /// <summary>
+    /// Запускает парсинг страницы с погодой конкретного города.
+    /// 1) Открывает вкладку в браузере;
+    /// 2) Переходит по ссылке указанной в параметре;
+    /// 3) Кликает на кнопку "10 дней" на странице;
+    /// 4) Запускается парисинг данных со страницы. Собрано будет информация на 10 дней;
+    /// </summary>
+    /// <param name="cityHref">Url страницы с погодой для конкретного города</param>
+    /// <param name="browser">Browser. Необходим для открытия новой страницы, которую необходимо обработать</param>
+    /// <param name="cancellationToken"></param>
+    private async ValueTask NavigateToCityPage(string cityHref, Browser browser, CancellationToken cancellationToken)
     {
         await using var page = await browser.NewPageAsync();
         var navigationTask = page.WaitForNavigationAsync();
@@ -45,6 +62,10 @@ public class Parser : IParser
         await page.CloseAsync();
     }
 
+    /// <summary>
+    /// Конфигурируем и открываем браузер
+    /// </summary>
+    /// <returns>Запущенный браузер</returns>
     private static async Task<Browser> LaunchBrowser()
     {
         var launch = new LaunchOptions
@@ -56,9 +77,16 @@ public class Parser : IParser
         return await Puppeteer.LaunchAsync(launch);
     }
 
+    /// <summary>
+    /// Собирает информацию по популярным городам России
+    /// </summary>
+    /// <param name="page">Вкладка браузера.</param>
+    /// <returns>Ссылки на популярные города России</returns>
     private static async IAsyncEnumerable<string> GetCitiesHref(Page page)
     {
+        var navigationTask = page.WaitForNavigationAsync();
         await page.GoToAsync("https://www.gismeteo.ru/");
+        await navigationTask;
 
         var elements = await page.QuerySelectorAllAsync(Selectors.PopularCountrySelector());
 
@@ -66,10 +94,15 @@ public class Parser : IParser
         {
             yield return await element.EvaluateFunctionAsync<string>(Scripts.Href());
         }
-        
+
         await page.CloseAsync();
     }
 
+    /// <summary>
+    /// Собирает информацию за каждый день.
+    /// </summary>
+    /// <param name="page">Вкладка браузера с которой будет собираться информация.</param>
+    /// <returns>Возвращает погоду за 10 дней</returns>
     private static async IAsyncEnumerable<WeatherOfDay> GetWeatherOfDays(Page page)
     {
         var cityNameElement = await page.WaitForSelectorAsync(Selectors.CityName());
@@ -83,6 +116,13 @@ public class Parser : IParser
         }
     }
     
+    /// <summary>
+    /// Собирает информацию за 1 день со страницы
+    /// </summary>
+    /// <param name="page">Вкладка браузера.</param>
+    /// <param name="index">Индекс дня  из 10</param>
+    /// <param name="cityName">Наименование города</param>
+    /// <returns>Погоду за один день</returns>
     private static async Task<WeatherOfDay> GetWeatherOfDay(Page page, int index, string cityName)
     {
         var wind = await GetValueBySelector(page, Selectors.Wind(index));
@@ -116,9 +156,16 @@ public class Parser : IParser
         return weatherOfDay;
     }
 
+    /// <summary>
+    /// Вспомогательный метод для получения значения из селектора
+    /// </summary>
+    /// <param name="page">Вкладка браузера.</param>
+    /// <param name="selector">Селектор</param>
+    /// <param name="defaultValue">Значение которое будет использоваться в случае если результат получения значение селектора равен NULL</param>
+    /// <returns></returns>
     private static async Task<string> GetValueBySelector(Page page, string? selector, string? defaultValue = default)
     {
-        var element = await page.QuerySelectorAsync(selector);
+        var element = await page.WaitForSelectorAsync(selector);
 
         if (element == null)
             return defaultValue;
@@ -128,6 +175,11 @@ public class Parser : IParser
         return value;
     }
 
+    /// <summary>
+    /// Закрывает вкладку браузера и сам браузер
+    /// </summary>
+    /// <param name="page">Вкладка браузера.</param>
+    /// <param name="browser">Браузер</param>
     private static async Task CloseAll(Page page, Browser browser)
     {
         await page.CloseAsync();
