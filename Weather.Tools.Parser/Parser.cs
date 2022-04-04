@@ -56,7 +56,7 @@ public class Parser : IParser
 
         await foreach (var weatherOfDay in GetWeatherOfDays(page).WithCancellation(cancellationToken))
         {
-            await _weatherForecastRepository.CreateAsync(weatherOfDay);
+            await _weatherForecastRepository.CreateOrUpdateAsync(weatherOfDay);
         }
 
         await page.CloseAsync();

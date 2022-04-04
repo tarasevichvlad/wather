@@ -31,9 +31,13 @@ public class WeatherForecastRepository : IWeatherForecastRepository
         return await result.SingleAsync();
     }
 
-    public async Task CreateAsync(WeatherOfDay weatherOfDay)
+    public async Task CreateOrUpdateAsync(WeatherOfDay weatherOfDay)
     {
-        await _collection.InsertOneAsync(weatherOfDay);
+        await _collection
+            .ReplaceOneAsync(
+                x => x.Id == weatherOfDay.Id,
+                weatherOfDay,
+            new ReplaceOptions { IsUpsert = true });
     }
 
     public async Task CreateBulkAsync(IEnumerable<WeatherOfDay> weatherOfDay)
